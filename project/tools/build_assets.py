@@ -18,7 +18,7 @@ SIZES = json.load(open(f"{ROOT}/data/sizes.json"))
 
 # Curation for the preview. None of this comes from the live site: Apex should confirm it.
 FEATURED = ["acne-pro-serum-plus", "white-focus-serum", "peptides-sunscreen-spf50-pa", "age-focus-serum-plus",
-            "moist-up-cream", "double-cleanser", "total-hair-serum"]
+            "moist-up-cream", "double-cleanser"]
 
 ROUTINES = [
     {"id": "acne", "label": "Acne", "th": "สิว",

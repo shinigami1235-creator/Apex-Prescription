@@ -7,10 +7,10 @@ This folder holds five new layouts for the All Products page on apexsxskin.com (
 | Folder | Layout |
 |---|---|
 | `v1-category-ring` | Category chips over a Blender ring platform. The ring turns every 6 seconds, and dragging or tapping a product brings it to the front with its details beside it. |
-| `v2-routine-shelf` | Six concerns (Acne, Dark spots, Anti-aging, Dry skin, Body, Hair loss). Each one fills four Blender steps in order of use, with the routine total and one button that adds all four. |
+| `v2-routine-shelf` | Six concerns (Acne, Dark spots, Anti-aging, Dry skin, Body, Hair loss). Each one fills four pedestals on the ring's platform in order of use, with the routine total and one button that adds all four. |
 | `v3-scroll-spotlight` | One product per category takes the Blender plinth in turn as you scroll. |
 | `v4-skin-map` | The MakeHuman mesh figure from the Apex Surgery body map. Tapping an area lists the products whose "วิธีใช้" names that area. |
-| `v5-ring-and-routine` | Seven featured products on the ring, the routine shelf, then every product. |
+| `v5-ring-and-routine` | Six featured products on the ring, the routine on the same platform, then every product. |
 | `original` | The current page, saved with its styles for comparison. |
 
 Every version ends with the full catalogue: all 28 products with category, price and sort filters, the same as the live page but without the second page.
@@ -19,10 +19,10 @@ Every version ends with the full catalogue: all 28 products with category, price
 
 - Product names, prices, categories and links come from WooCommerce's Store API (`/wp-json/wc/store/v1/products`). The Thai text (short description, รายละเอียด, ส่วนผสมสำคัญ, วิธีใช้, อย. number) is copied word for word from each product page.
 - Product images are Apex's official packshots (Google Drive folder APEX-SX_Live_PackShot) for 25 products. Double Cleanser, Clear Toner and Revitalizer Cleanser aren't in that folder, so theirs are cut out of the product page photo. The folder also has Enzyme Bright Serum, Elixir Mask, BX UV Soft and Moist Tank Cream, which aren't in the shop yet. The gallery posters in the product drawer are the site's own gallery images.
-- The stage backgrounds (ring, shelf, plinth) are Blender renders. `project/renders/blend` has the scenes, and `project/tools/stages.py` rebuilds them (`python stages.py ring wide 64 out_folder`). Each render also writes a JSON file with the screen position of every standing spot, so the page can put products on the surfaces.
+- The stage backgrounds (ring, routine pedestals, plinth) are Blender renders. `project/renders/blend` has the scenes, and `project/tools/stages.py` rebuilds them (`python stages.py ring wide 64 out_folder`). Each render also writes a JSON file with the screen position of every standing spot, so the page can put products on the surfaces.
 
 These are my picks, not Apex's, and need their OK before launch:
-- the seven featured products in version 5
+- the six featured products in version 5
 - the six routines and their steps in versions 2 and 5
 - which products show for each body area in version 4
 

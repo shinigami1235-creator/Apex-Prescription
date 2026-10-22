@@ -1106,8 +1106,7 @@ window.APEX = {
 "peptides-sunscreen-spf50-pa",
 "age-focus-serum-plus",
 "moist-up-cream",
-"double-cleanser",
-"total-hair-serum"
+"double-cleanser"
 ],
 "routines": [
 {

@@ -108,6 +108,7 @@ def area(name, loc, rot, size, energy, color=(1, 1, 1)):
     l.data.size = size
     l.data.energy = energy
     l.data.color = color
+    l.visible_camera = False  # lights never show up as bright panels in shot
     return l
 
 
@@ -135,26 +136,30 @@ world()
 backdrop = mat("backdrop", (0.86, 0.82, 0.91, 1), rough=0.9)
 spots = {}
 
-if stage == "ring":
-    # Low round platform: pearl satin top, thin violet chrome band, soft plinth shadow gap
+def platform():
+    """Pearl round platform, violet chrome band and upright halo: shared by the ring and the routine steps."""
     R, H = 4.2, 0.32
-    base = add(bevel(cyl(R, H, 0, name="platform"), 0.06), mat("satin", (0.95, 0.94, 0.97, 1), rough=0.28, coat=0.6))
-    band = add(cyl(R + 0.012, 0.07, H - 0.11, name="band"), mat("chrome", LILAC, rough=0.12, metal=1.0))
-    lip = add(bevel(cyl(R * 0.62, 0.045, H, name="inner"), 0.01), mat("frost", (0.88, 0.84, 0.94, 1), rough=0.18, coat=1.0))
-    # Large upright ring behind as the brand halo (a full circle, not an arch)
-    bpy.ops.mesh.primitive_torus_add(major_radius=4.1, minor_radius=0.06, major_segments=220, minor_segments=24,
-                                     location=(0, 3.6, 3.7), rotation=(math.radians(90), 0, 0))
-    halo = add(bpy.context.object, mat("halo", LILAC, rough=0.15, metal=1.0))
-    f, w, j = cove(backdrop)
+    add(bevel(cyl(R, H, 0, name="platform"), 0.06), mat("satin", (0.95, 0.94, 0.97, 1), rough=0.28, coat=0.6))
+    add(cyl(R + 0.012, 0.07, H - 0.11, name="band"), mat("chrome", LILAC, rough=0.12, metal=1.0))
+    add(bevel(cyl(R * 0.62, 0.045, H, name="inner"), 0.01), mat("frost", (0.88, 0.84, 0.94, 1), rough=0.18, coat=1.0))
+    bpy.ops.mesh.primitive_torus_add(major_radius=4.3, minor_radius=0.06, major_segments=220, minor_segments=24,
+                                     location=(0, 3.6, 4.1), rotation=(math.radians(90), 0, 0))
+    add(bpy.context.object, mat("halo", LILAC, rough=0.15, metal=1.0))
+    cove(backdrop)
     area("key", (-5, -6, 9), (math.radians(40), 0, math.radians(-35)), 7, 2600)
     area("fill", (7, -4, 5), (math.radians(60), 0, math.radians(55)), 6, 900, (0.92, 0.9, 1.0))
     area("rim", (0, 6, 8), (math.radians(-35), 0, 0), 5, 900, (0.85, 0.78, 1.0))
+    # higher camera than before so the back of the ring sits above the front instead of behind it
     if aspect == "wide":
-        camera((0, -15.5, 5.6), (0, 0.6, 1.9), 50)
+        camera((0, -14.8, 7.6), (0, 0.4, 1.55), 50)
     else:
-        camera((0, -12.6, 5.9), (0, 0.2, 1.75), 38)
-    top = H + 0.045
-    ring_r = R * 0.80
+        camera((0, -11.0, 7.2), (0, 0.15, 1.45), 38)
+    return R, H + 0.045
+
+
+if stage == "ring":
+    R, top = platform()
+    ring_r = R * 0.82
     pts = []
     for i in range(72):
         a = 2 * math.pi * i / 72
@@ -163,6 +168,25 @@ if stage == "ring":
         pts.append({"a": round(a, 4), "foot": p0, "unit_h": round(p0[1] - p1[1], 5)})
     spots = {"ring": pts, "center": proj((0, 0, top)),
              "center_unit_h": round(proj((0, 0, top))[1] - proj((0, 0, top + 1))[1], 5)}
+
+elif stage == "steps":
+    # The routine: four pedestals rising left to right along the front of the same platform
+    R, top = platform()
+    stone = mat("stone", (0.95, 0.94, 0.97, 1), rough=0.3, coat=0.7)
+    chrome = mat("chrome2", LILAC, rough=0.12, metal=1.0)
+    out_steps = []
+    for i, ang in enumerate([-58, -20, 20, 58]):
+        a = math.radians(ang)
+        x, y = math.sin(a) * 2.55, -math.cos(a) * 1.55 + 0.35
+        hgt = 0.35 + i * 0.38
+        bpy.ops.mesh.primitive_cylinder_add(vertices=128, radius=0.78, depth=hgt, location=(x, y, top + hgt / 2))
+        add(bevel(bpy.context.object, 0.04), stone)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=128, radius=0.8, depth=0.05, location=(x, y, top + hgt - 0.09))
+        add(bpy.context.object, chrome)
+        t = top + hgt
+        f0 = proj((x, y, t)); f1 = proj((x, y, t + 1))
+        out_steps.append({"foot": f0, "unit_h": round(f0[1] - f1[1], 5), "face": proj((x, y - 0.8, top + hgt * 0.45))})
+    spots = {"steps": out_steps}
 
 elif stage == "shelf":
     # Four stepped frosted blocks rising left to right: the routine in order of use

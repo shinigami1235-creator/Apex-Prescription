@@ -12,7 +12,7 @@ shell = json.load(open(f"{ROOT}/data/shell.json", encoding="utf-8"))
 
 # stage renders -> webp
 os.makedirs(f"{SITE}/assets/stage", exist_ok=True)
-for name in ["ring-wide", "ring-tall", "shelf-wide", "plinth-wide", "plinth-tall"]:
+for name in ["ring-wide", "ring-tall", "steps-wide", "plinth-wide", "plinth-tall"]:
     png = f"{RENDERS}/{name}.png"
     if not os.path.exists(png):
         print("missing", name); continue

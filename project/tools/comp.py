@@ -31,7 +31,10 @@ if __name__=="__main__":
             k=int(round(a/(2*math.pi)*72))%72; pt=sp["ring"][k]
             items.append((pt["foot"][1], s, pt))
         for _,s,pt in sorted(items):
-            place(base, s, pt["foot"], pt["unit_h"], 2.1)
+            place(base, s, pt["foot"], pt["unit_h"], float(sys.argv[4]) if len(sys.argv)>4 else 2.1)
+    elif stage=="steps":
+        for s,st in zip(["face-wash-foam","white-focus-serum","clear-dark-spot-cream","peptides-sunscreen-spf50-pa"], sp["steps"]):
+            place(base, s, st["foot"], st["unit_h"], float(sys.argv[4]) if len(sys.argv)>4 else 2.2)
     elif stage=="shelf":
         for s,st in zip(["acne-pro-whip-foam","acne-pro-serum-plus","acne-pro-powder-lotion","acne-pro-sunscreen-spf50-pa"], sp["steps"]):
             place(base, s, st["foot"], st["unit_h"], 1.9)

@@ -59,13 +59,13 @@
   /* ---------- drawers ---------- */
   function drawer(cls) {
     const d = h("div", { class: "ax-drawer " + cls, "aria-hidden": "true" },
-      h("div", { class: "scrim" }), h("div", { class: "panel ax", role: "dialog", "aria-modal": "true" },
+      h("div", { class: "scrim" }), h("div", { class: "panel ax", role: "dialog", "aria-modal": "true", tabindex: "-1" },
         h("button", { class: "close", "aria-label": "Close", html: ICON.x }), h("div", { class: "scroll" })));
     document.body.append(d);
     const close = () => { d.classList.remove("open"); d.setAttribute("aria-hidden", "true"); document.documentElement.style.overflow = ""; };
     $(".scrim", d).onclick = close; $(".close", d).onclick = close;
     document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
-    d.show = () => { d.classList.add("open"); d.setAttribute("aria-hidden", "false"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".close", d).focus(), 50); };
+    d.show = () => { d.classList.add("open"); d.setAttribute("aria-hidden", "false"); document.documentElement.style.overflow = "hidden"; setTimeout(() => $(".panel", d).focus({ preventScroll: true }), 50); };
     d.close = close;
     return d;
   }
@@ -202,24 +202,30 @@
     return el;
   }
   // place an item so its base sits on foot=[x,y] (0-1 of stage), height = unit_h * units
-  function put(el, p, foot, unitH, k = 2.1, extra = "", maxW = 0) {
+  function put(el, p, foot, unitH, k = 2.1, extra = "", maxW = 0, topPad = 0) {
     let u = units(p, k);
     if (maxW && u * p.ratio > maxW) u = maxW / p.ratio; // wide jars and boxes: keep them on the surface
-    const hh = unitH * u * 100;
+    let hh = unitH * u * 100;
+    if (topPad && hh > (foot[1] - topPad) * 100) hh = (foot[1] - topPad) * 100; // never taller than the frame
     el.style.height = hh + "%";
     el.style.left = foot[0] * 100 + "%";
     el.style.top = foot[1] * 100 + "%";
     el.style.transform = `translate(-50%,-100%) ${extra}`;
   }
   // Ring: products travel along the platform's rim (72 sampled points from Blender's camera)
+  // Ring: products glide along the platform rim (72 points sampled from Blender's camera).
+  // The ring never snaps: it turns slowly and keeps moving, easing down as each product reaches the front.
   function ring(host, opts) {
-    const api = { items: [], theta: 0, target: 0, onFront: opts.onFront || (() => {}) };
-    let data, st, raf, auto, paused = false, front = -1;
+    const api = { items: [], theta: 0, onFront: opts.onFront || (() => {}) };
+    let data, st, raf, front = -1, hover = false, drag = null, tween = null, inertia = 0, speedK = 1, last = 0, built = false;
+    const secPerItem = opts.secPerItem || 5.5;
     const pick = () => matchMedia("(max-width:767px)").matches ? opts.tall : opts.wide;
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     async function build() {
       const name = pick(); api.tall = name === opts.tall; data = await spots(name);
       host.innerHTML = ""; st = stageEl(name, data.size); host.append(st);
-      api.stage = st; set(opts.list); bindDrag(); loop();
+      api.stage = st; set(api.list || opts.list, true); bindDrag();
+      if (!built) { built = true; loop(); }
     }
     function sample(a) {
       const n = data.ring.length, t = ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) / (2 * Math.PI) * n;
@@ -227,24 +233,30 @@
       const A = data.ring[i], B = data.ring[j];
       return { x: A.foot[0] + (B.foot[0] - A.foot[0]) * f, y: A.foot[1] + (B.foot[1] - A.foot[1]) * f, u: A.unit_h + (B.unit_h - A.unit_h) * f };
     }
-    function set(list) {
-      api.list = list; api.items.forEach(i => i.el.remove()); api.items = [];
-      list.forEach((slug, i) => {
-        const p = BY[slug], el = itemEl(p);
-        el.onclick = () => { if (!dragMoved) go(i); };
-        el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(i); } };
-        st.append(el); api.items.push({ p, el, i });
-        el.animate([{ opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0)" }], { duration: 700, delay: i * 70, easing: "ease-out", fill: "backwards" });
-      });
-      api.theta = api.target = 0; front = -1; frame(); restart();
+    function set(list, instant) {
+      api.list = list;
+      const old = api.items; api.items = [];
+      old.forEach(it => { const an = it.el.animate([{ opacity: 1 }, { opacity: 0, transform: it.el.style.transform + " translateY(-4%)" }], { duration: instant ? 0 : 380, easing: "ease-in", fill: "forwards" }); an.onfinish = () => it.el.remove(); });
+      setTimeout(() => {
+        list.forEach((slug, i) => {
+          const p = BY[slug], el = itemEl(p);
+          el.onclick = () => { if (!api.dragged) go(i); };
+          el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(i); } };
+          el.style.opacity = "0";
+          st.append(el); api.items.push({ p, el, i });
+          el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 650, delay: i * 60, easing: "ease-out", fill: "forwards" });
+        });
+        api.theta = 0; tween = null; front = -1; frame();
+      }, instant ? 0 : 380);
     }
-    function step() { return 2 * Math.PI / Math.max(api.items.length, 1); }
-    function go(i) { // bring item i to the front by the shortest way round
-      const n = api.items.length; if (!n) return;
-      const want = -i * step(); let d = want - api.target; d = Math.atan2(Math.sin(d), Math.cos(d)); api.target += d; restart();
+    const step = () => 2 * Math.PI / Math.max(api.items.length, 1);
+    function go(i) { // ease item i to the front the shortest way round
+      if (!api.items.length) return;
+      let d = -i * step() - api.theta; d = Math.atan2(Math.sin(d), Math.cos(d));
+      tween = { from: api.theta, to: api.theta + d, t0: performance.now(), dur: 900 + Math.abs(d) * 420 };
     }
     api.go = go;
-    api.next = d => { const n = api.items.length; if (!n) return; api.target -= d * step(); restart(); };
+    api.next = d => { const n = api.items.length; if (!n) return; go((front + d + n) % n); };
     function frame() {
       const n = api.items.length;
       api.items.forEach((it, i) => {
@@ -252,27 +264,50 @@
         const depth = (Math.cos(a) + 1) / 2; // 1 = front
         put(it.el, it.p, [s.x, s.y], s.u, (api.tall ? opts.kTall : opts.k) || 2.1, "", api.tall ? opts.maxWTall : opts.maxW);
         it.el.style.zIndex = 10 + Math.round(s.y * 1000);
-        it.el.style.filter = `brightness(${0.9 + depth * 0.1})`;
+        it.el.style.filter = `brightness(${0.93 + depth * 0.07})`;
       });
       if (n) {
-        const f = ((Math.round(-api.target / step()) % n) + n) % n;
+        const f = ((Math.round(-api.theta / step()) % n) + n) % n;
         if (f !== front) { front = f; api.front = api.items[f]; api.onFront(api.items[f].p, f); }
       }
     }
     function loop() {
-      cancelAnimationFrame(raf);
-      const tick = () => { const d = api.target - api.theta; if (Math.abs(d) > 1e-4) { api.theta += d * 0.085; frame(); } raf = requestAnimationFrame(tick); };
+      const tick = now => {
+        const dt = Math.min((now - (last || now)) / 1000, 0.05); last = now;
+        if (data && api.items.length) {
+          if (tween) {
+            const t = Math.min((now - tween.t0) / tween.dur, 1);
+            api.theta = tween.from + (tween.to - tween.from) * ease(t);
+            if (t >= 1) { tween = null; speedK = 0; }
+          } else if (drag) {
+            // the pointer moves the ring directly
+          } else if (Math.abs(inertia) > 0.0005) {
+            api.theta += inertia * dt; inertia *= Math.pow(0.04, dt);
+          } else if (api.items.length > 1 && !document.hidden) {
+            // slow continuous turn that lingers as each product passes the front
+            const want = hover ? 0 : 1; speedK += (want - speedK) * Math.min(dt * 1.6, 1);
+            const ph = ((-api.theta / step()) % 1 + 1) % 1, linger = 0.28 + 0.72 * Math.pow(Math.sin(Math.PI * ph), 2);
+            api.theta -= step() / secPerItem * linger * speedK * dt * 1.55;
+          }
+          frame();
+        }
+        raf = requestAnimationFrame(tick);
+      };
       raf = requestAnimationFrame(tick);
     }
-    function restart() { clearInterval(auto); if (opts.auto && api.items.length > 1) auto = setInterval(() => { if (!paused && !document.hidden) api.next(1); }, opts.auto); }
-    let dragMoved = false;
     function bindDrag() {
-      let x0 = null, t0 = 0;
-      st.addEventListener("pointerdown", e => { x0 = e.clientX; t0 = api.target; dragMoved = false; paused = true; });
-      addEventListener("pointermove", e => { if (x0 == null) return; const dx = e.clientX - x0; if (Math.abs(dx) > 6) dragMoved = true; api.target = t0 + dx / st.clientWidth * Math.PI * 1.4; });
-      addEventListener("pointerup", () => { if (x0 == null) return; x0 = null; api.target = Math.round(api.target / step()) * step(); paused = false; restart(); setTimeout(() => dragMoved = false, 0); });
-      st.addEventListener("mouseenter", () => paused = true); st.addEventListener("mouseleave", () => paused = false);
+      st.addEventListener("pointerdown", e => { drag = { x: e.clientX, th: api.theta, lx: e.clientX, lt: performance.now(), v: 0 }; tween = null; api.dragged = false; });
+      st.addEventListener("mouseenter", () => hover = true);
+      st.addEventListener("mouseleave", () => hover = false);
     }
+    addEventListener("pointermove", e => {
+      if (!drag || !st) return;
+      const dx = e.clientX - drag.x; if (Math.abs(dx) > 6) api.dragged = true;
+      const now = performance.now(), k = Math.PI * 1.3 / st.clientWidth;
+      drag.v = (e.clientX - drag.lx) * k / Math.max((now - drag.lt) / 1000, 0.008); drag.lx = e.clientX; drag.lt = now;
+      api.theta = drag.th + dx * k;
+    });
+    addEventListener("pointerup", () => { if (!drag) return; inertia = Math.max(-6, Math.min(6, drag.v)); drag = null; speedK = 0; setTimeout(() => api.dragged = false, 0); });
     let w = matchMedia("(max-width:767px)").matches;
     addEventListener("resize", () => { const m = matchMedia("(max-width:767px)").matches; if (m !== w) { w = m; build(); } });
     api.set = l => set(l);
