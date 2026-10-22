@@ -71,7 +71,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/face-wash-foam/",
 "img": "p/face-wash-foam.webp",
-"ratio": 0.3445,
+"ratio": 0.4378,
 "cm": 16,
 "posters": [
 "g/Face-Wash-Foam-03.webp",
@@ -112,7 +112,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/acne-pro-powder-lotion/",
 "img": "p/acne-pro-powder-lotion.webp",
-"ratio": 0.4254,
+"ratio": 0.4233,
 "cm": 8,
 "posters": [
 "g/Acne-Pro-Powder-Lotion-03.webp",
@@ -153,7 +153,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/acne-pro-sunscreen-spf50-pa/",
 "img": "p/acne-pro-sunscreen-spf50-pa.webp",
-"ratio": 0.2796,
+"ratio": 0.2833,
 "cm": 14,
 "posters": [
 "g/Acne-Pro-Sunscreen-SPF50-PA-03.webp",
@@ -193,7 +193,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/acne-pro-serum-plus/",
 "img": "p/acne-pro-serum-plus.webp",
-"ratio": 0.2569,
+"ratio": 0.2629,
 "cm": 13,
 "posters": [
 "g/Acne-Pro-Serum-Plus-03.webp",
@@ -229,7 +229,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/acne-pro-whip-foam/",
 "img": "p/acne-pro-whip-foam.webp",
-"ratio": 0.3237,
+"ratio": 0.3247,
 "cm": 14,
 "posters": [
 "g/Acne-Pro-Whip-Foam-02.webp",
@@ -269,7 +269,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/gluta-o/",
 "img": "p/gluta-o.webp",
-"ratio": 0.6889,
+"ratio": 0.6868,
 "cm": 13,
 "posters": [
 "g/Gluta-O-02.webp",
@@ -309,7 +309,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/femm-serum/",
 "img": "p/femm-serum.webp",
-"ratio": 0.3697,
+"ratio": 0.4278,
 "cm": 12,
 "posters": [
 "g/Femm-Serum-03.webp",
@@ -352,7 +352,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/white-up-cream/",
 "img": "p/white-up-cream.webp",
-"ratio": 0.3307,
+"ratio": 0.34,
 "cm": 15,
 "posters": [
 "g/White-Up-Cream-03.webp",
@@ -391,7 +391,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/anti-cellulite-cream/",
 "img": "p/anti-cellulite-cream.webp",
-"ratio": 1.3958,
+"ratio": 1.3533,
 "cm": 8,
 "posters": [
 "g/Anti-Cellulite-Cream-02.webp",
@@ -430,7 +430,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/body-focus-cream/",
 "img": "p/body-focus-cream.webp",
-"ratio": 1.3963,
+"ratio": 1.3533,
 "cm": 8,
 "posters": [
 "g/Body-Focus-Cream-02.webp",
@@ -461,7 +461,7 @@ window.APEX = {
 "related": [],
 "url": "https://www.apexsxskin.com/product/moist-up-cream/",
 "img": "p/moist-up-cream.webp",
-"ratio": 1.158,
+"ratio": 1.1389,
 "cm": 6.5,
 "posters": [
 "g/Moist-Up-Cream-03.webp",
@@ -501,7 +501,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/ultimate-sun-protection-spf50-pa/",
 "img": "p/ultimate-sun-protection-spf50-pa.webp",
-"ratio": 0.4184,
+"ratio": 0.4228,
 "cm": 15,
 "posters": [
 "g/Ultimate-Sun-Protection-SPF50-PA-02.webp",
@@ -536,7 +536,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/peptides-sunscreen-spf50-pa/",
 "img": "p/peptides-sunscreen-spf50-pa.webp",
-"ratio": 0.4199,
+"ratio": 0.42,
 "cm": 15,
 "posters": [
 "g/Peptides-Sunscreen-SPF50-PA-02.webp",
@@ -568,7 +568,7 @@ window.APEX = {
 "related": [],
 "url": "https://www.apexsxskin.com/product/clear-dark-spot-cream/",
 "img": "p/clear-dark-spot-cream.webp",
-"ratio": 0.3613,
+"ratio": 0.3589,
 "cm": 8,
 "posters": [
 "g/Clear-Dark-Spot-Cream-02.webp",
@@ -602,7 +602,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/white-focus-serum/",
 "img": "p/white-focus-serum.webp",
-"ratio": 0.3068,
+"ratio": 0.3011,
 "cm": 13,
 "posters": [
 "g/White-Focus-Serum-02.webp",
@@ -676,7 +676,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/a-reju-water/",
 "img": "p/a-reju-water.webp",
-"ratio": 0.2985,
+"ratio": 0.2967,
 "cm": 15,
 "posters": [
 "g/A-Reju-Water-02.webp",
@@ -720,7 +720,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/a-reju-serum/",
 "img": "p/a-reju-serum.webp",
-"ratio": 0.2977,
+"ratio": 0.2967,
 "cm": 10,
 "posters": [
 "g/A-Reju-Serum-03.webp",
@@ -762,7 +762,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/advance-night-serum/",
 "img": "p/advance-night-serum.webp",
-"ratio": 0.2988,
+"ratio": 0.3011,
 "cm": 13,
 "posters": [
 "g/Advance-Night-Serum-03.webp",
@@ -810,7 +810,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/age-focus-cream/",
 "img": "p/age-focus-cream.webp",
-"ratio": 1.1477,
+"ratio": 1.1389,
 "cm": 6.5,
 "posters": [
 "g/Age-Focus-Cream-03.webp",
@@ -854,7 +854,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/age-focus-serum-plus/",
 "img": "p/age-focus-serum-plus.webp",
-"ratio": 0.2702,
+"ratio": 0.2678,
 "cm": 13,
 "posters": [
 "g/Age-Focus-Serum-Plus-01.webp",
@@ -896,7 +896,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/total-eye-serum/",
 "img": "p/total-eye-serum.webp",
-"ratio": 0.2801,
+"ratio": 0.2811,
 "cm": 12,
 "posters": [
 "g/Total-Eye-Serum-05.webp",
@@ -936,7 +936,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/h-10/",
 "img": "p/h-10.webp",
-"ratio": 0.6794,
+"ratio": 0.7084,
 "cm": 13,
 "posters": [
 "g/H-10-03.webp",
@@ -977,7 +977,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/total-hair-serum/",
 "img": "p/total-hair-serum.webp",
-"ratio": 0.3389,
+"ratio": 0.3333,
 "cm": 13,
 "posters": [
 "g/Total-Hair-Serum-02.webp",
@@ -1042,7 +1042,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/pro-densifying-conditioner/",
 "img": "p/pro-densifying-conditioner.webp",
-"ratio": 0.4965,
+"ratio": 0.4933,
 "cm": 17,
 "posters": [
 "g/Pro-Densifying-Conditioner-02.webp",
@@ -1081,7 +1081,7 @@ window.APEX = {
 ],
 "url": "https://www.apexsxskin.com/product/pro-clarifying-shampoo/",
 "img": "p/pro-clarifying-shampoo.webp",
-"ratio": 0.4958,
+"ratio": 0.4933,
 "cm": 17,
 "posters": [
 "g/Pro-Clarifying-Shampoo-03.webp",

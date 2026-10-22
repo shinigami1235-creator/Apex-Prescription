@@ -18,7 +18,7 @@ Every version ends with the full catalogue: all 28 products with category, price
 ## Where the content comes from
 
 - Product names, prices, categories and links come from WooCommerce's Store API (`/wp-json/wc/store/v1/products`). The Thai text (short description, รายละเอียด, ส่วนผสมสำคัญ, วิธีใช้, อย. number) is copied word for word from each product page.
-- Product images are cut out of each product's main photo. The gallery posters in the product drawer are the site's own gallery images.
+- Product images are Apex's official packshots (Google Drive folder APEX-SX_Live_PackShot) for 25 products. Double Cleanser, Clear Toner and Revitalizer Cleanser aren't in that folder, so theirs are cut out of the product page photo. The folder also has Enzyme Bright Serum, Elixir Mask, BX UV Soft and Moist Tank Cream, which aren't in the shop yet. The gallery posters in the product drawer are the site's own gallery images.
 - The stage backgrounds (ring, shelf, plinth) are Blender renders. `project/renders/blend` has the scenes, and `project/tools/stages.py` rebuilds them (`python stages.py ring wide 64 out_folder`). Each render also writes a JSON file with the screen position of every standing spot, so the page can put products on the surfaces.
 
 These are my picks, not Apex's, and need their OK before launch:
