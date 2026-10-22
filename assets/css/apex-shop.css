@@ -308,3 +308,8 @@
 .ax .ring-grid.flip{grid-template-columns:minmax(0,1fr) minmax(0,1.65fr)}
 @media (max-width:1024px){.ax .ring-grid.flip{grid-template-columns:minmax(0,1fr)}}
 .ax-drawer .panel:focus{outline:none}
+/* ring items move by transform only */
+.ax .item.on-ring{left:0;top:0;transform-origin:50% 100%;will-change:transform;backface-visibility:hidden;contain:layout style}
+.ax .item.on-ring img{will-change:auto}
+.ax .step>div{min-width:0}.ax .step .n{overflow-wrap:anywhere}
+.ax .step{white-space:normal;text-align:left}

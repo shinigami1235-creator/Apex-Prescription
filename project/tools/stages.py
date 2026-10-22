@@ -175,13 +175,13 @@ elif stage == "steps":
     stone = mat("stone", (0.95, 0.94, 0.97, 1), rough=0.3, coat=0.7)
     chrome = mat("chrome2", LILAC, rough=0.12, metal=1.0)
     out_steps = []
-    for i, ang in enumerate([-58, -20, 20, 58]):
+    for i, ang in enumerate([-64, -22, 22, 64]):
         a = math.radians(ang)
-        x, y = math.sin(a) * 2.55, -math.cos(a) * 1.55 + 0.35
-        hgt = 0.35 + i * 0.38
-        bpy.ops.mesh.primitive_cylinder_add(vertices=128, radius=0.78, depth=hgt, location=(x, y, top + hgt / 2))
+        x, y = math.sin(a) * 3.05, -math.cos(a) * 1.7 + 0.45
+        hgt = 0.32 + i * 0.3
+        bpy.ops.mesh.primitive_cylinder_add(vertices=128, radius=0.7, depth=hgt, location=(x, y, top + hgt / 2))
         add(bevel(bpy.context.object, 0.04), stone)
-        bpy.ops.mesh.primitive_cylinder_add(vertices=128, radius=0.8, depth=0.05, location=(x, y, top + hgt - 0.09))
+        bpy.ops.mesh.primitive_cylinder_add(vertices=128, radius=0.72, depth=0.05, location=(x, y, top + hgt - 0.09))
         add(bpy.context.object, chrome)
         t = top + hgt
         f0 = proj((x, y, t)); f1 = proj((x, y, t + 1))

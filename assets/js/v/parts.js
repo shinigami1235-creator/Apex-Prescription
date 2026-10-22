@@ -31,7 +31,7 @@
     const info = infoPanel({ nav: d => r.next(d) });
     const stageHost = h("div", {});
     host.append(h("div", { class: "ring-grid" }, h("div", {}, chips || null, chips ? h("div", { style: "height:16px" }) : null, stageHost), info));
-    r = ring(stageHost, { wide: "ring-wide", tall: "ring-tall", list, secPerItem: 5.5, k: 2.35, kTall: 3.1, maxW: 1.9, maxWTall: 2.1,
+    r = ring(stageHost, { wide: "ring-wide", tall: "ring-tall", list, hold: 3400, glide: 1600, k: 2.35, kTall: 3.1, maxW: 1.9, maxWTall: 2.1,
       onFront: (p, i) => info.show(p, i, r ? r.items.length : list.length) });
     return r;
   }

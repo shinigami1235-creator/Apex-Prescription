@@ -212,19 +212,24 @@
     el.style.top = foot[1] * 100 + "%";
     el.style.transform = `translate(-50%,-100%) ${extra}`;
   }
-  // Ring: products travel along the platform's rim (72 sampled points from Blender's camera)
-  // Ring: products glide along the platform rim (72 points sampled from Blender's camera).
-  // The ring never snaps: it turns slowly and keeps moving, easing down as each product reaches the front.
+  // Ring: products travel along the platform rim (72 points sampled from Blender's camera).
+  // Motion: glide to the next product, hold, glide again. Positions use GPU transforms only,
+  // so nothing on the page is laid out again while the ring moves.
   function ring(host, opts) {
     const api = { items: [], theta: 0, onFront: opts.onFront || (() => {}) };
-    let data, st, raf, front = -1, hover = false, drag = null, tween = null, inertia = 0, speedK = 1, last = 0, built = false;
-    const secPerItem = opts.secPerItem || 5.5;
+    const HOLD = opts.hold || 3400, GLIDE = opts.glide || 1600;
+    let data, st, W = 0, H = 0, front = -1, hover = false, drag = null, anim = null, holdUntil = 0, raf, built = false;
     const pick = () => matchMedia("(max-width:767px)").matches ? opts.tall : opts.wide;
-    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // slow out, glide, slow in
+    const step = () => 2 * Math.PI / Math.max(api.items.length, 1);
+    const k = () => (api.tall ? opts.kTall : opts.k) || 2.1, mw = () => api.tall ? opts.maxWTall : opts.maxW;
     async function build() {
       const name = pick(); api.tall = name === opts.tall; data = await spots(name);
-      host.innerHTML = ""; st = stageEl(name, data.size); host.append(st);
-      api.stage = st; set(api.list || opts.list, true); bindDrag();
+      data.uMax = Math.max(...data.ring.map(r => r.unit_h));
+      host.innerHTML = ""; st = stageEl(name, data.size); host.append(st); api.stage = st;
+      new ResizeObserver(() => { W = st.clientWidth; H = st.clientHeight; size(); frame(); }).observe(st);
+      W = st.clientWidth; H = st.clientHeight;
+      set(api.list || opts.list, true); bindDrag();
       if (!built) { built = true; loop(); }
     }
     function sample(a) {
@@ -233,81 +238,78 @@
       const A = data.ring[i], B = data.ring[j];
       return { x: A.foot[0] + (B.foot[0] - A.foot[0]) * f, y: A.foot[1] + (B.foot[1] - A.foot[1]) * f, u: A.unit_h + (B.unit_h - A.unit_h) * f };
     }
+    function size() { // each product's full size at the front of the ring; elsewhere it is scaled down
+      api.items.forEach(it => {
+        let u = units(it.p, k()); if (mw() && u * it.p.ratio > mw()) u = mw() / it.p.ratio;
+        it.h0 = data.uMax * u * H; it.w0 = it.h0 * it.p.ratio;
+        it.el.style.height = it.h0 + "px"; it.el.style.width = it.w0 + "px";
+      });
+    }
     function set(list, instant) {
       api.list = list;
       const old = api.items; api.items = [];
-      old.forEach(it => { const an = it.el.animate([{ opacity: 1 }, { opacity: 0, transform: it.el.style.transform + " translateY(-4%)" }], { duration: instant ? 0 : 380, easing: "ease-in", fill: "forwards" }); an.onfinish = () => it.el.remove(); });
+      old.forEach(it => { const an = it.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: instant ? 0 : 380, easing: "ease-in", fill: "forwards" }); an.onfinish = () => it.el.remove(); });
       setTimeout(() => {
         list.forEach((slug, i) => {
           const p = BY[slug], el = itemEl(p);
+          el.classList.add("on-ring");
           el.onclick = () => { if (!api.dragged) go(i); };
           el.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(i); } };
-          el.style.opacity = "0";
-          st.append(el); api.items.push({ p, el, i });
-          el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 650, delay: i * 60, easing: "ease-out", fill: "forwards" });
+          st.append(el); api.items.push({ p, el, i, z: 0 });
+          el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 650, delay: i * 60, easing: "ease-out", fill: "backwards" });
         });
-        api.theta = 0; tween = null; front = -1; frame();
+        api.theta = 0; anim = null; front = -1; size(); frame(); announce(0); holdUntil = performance.now() + HOLD;
       }, instant ? 0 : 380);
     }
-    const step = () => 2 * Math.PI / Math.max(api.items.length, 1);
-    function go(i) { // ease item i to the front the shortest way round
-      if (!api.items.length) return;
+    function announce(f) { if (f !== front && api.items[f]) { front = f; api.front = api.items[f]; api.onFront(api.items[f].p, f); } }
+    function glideTo(i, dur) {
+      const n = api.items.length; if (!n) return;
       let d = -i * step() - api.theta; d = Math.atan2(Math.sin(d), Math.cos(d));
-      tween = { from: api.theta, to: api.theta + d, t0: performance.now(), dur: 900 + Math.abs(d) * 420 };
+      anim = { from: api.theta, to: api.theta + d, t0: performance.now(), dur: dur || GLIDE * Math.max(1, Math.sqrt(Math.abs(d) / step())), idx: ((i % n) + n) % n, told: false };
     }
+    const go = i => glideTo(i);
     api.go = go;
-    api.next = d => { const n = api.items.length; if (!n) return; go((front + d + n) % n); };
+    api.next = d => { const n = api.items.length; if (n) glideTo((front + d + n) % n); };
     function frame() {
-      const n = api.items.length;
+      if (!W) return;
       api.items.forEach((it, i) => {
-        const a = api.theta + i * step(), s = sample(a);
-        const depth = (Math.cos(a) + 1) / 2; // 1 = front
-        put(it.el, it.p, [s.x, s.y], s.u, (api.tall ? opts.kTall : opts.k) || 2.1, "", api.tall ? opts.maxWTall : opts.maxW);
-        it.el.style.zIndex = 10 + Math.round(s.y * 1000);
-        it.el.style.filter = `brightness(${0.93 + depth * 0.07})`;
+        const s = sample(api.theta + i * step()), sc = s.u / data.uMax;
+        it.el.style.transform = `translate3d(${(s.x * W - it.w0 / 2).toFixed(2)}px,${(s.y * H - it.h0).toFixed(2)}px,0) scale(${sc.toFixed(4)})`;
+        const z = 10 + Math.round(s.y * 1000); if (z !== it.z) { it.z = z; it.el.style.zIndex = z; }
       });
-      if (n) {
-        const f = ((Math.round(-api.theta / step()) % n) + n) % n;
-        if (f !== front) { front = f; api.front = api.items[f]; api.onFront(api.items[f].p, f); }
-      }
     }
     function loop() {
       const tick = now => {
-        const dt = Math.min((now - (last || now)) / 1000, 0.05); last = now;
         if (data && api.items.length) {
-          if (tween) {
-            const t = Math.min((now - tween.t0) / tween.dur, 1);
-            api.theta = tween.from + (tween.to - tween.from) * ease(t);
-            if (t >= 1) { tween = null; speedK = 0; }
-          } else if (drag) {
-            // the pointer moves the ring directly
-          } else if (Math.abs(inertia) > 0.0005) {
-            api.theta += inertia * dt; inertia *= Math.pow(0.04, dt);
-          } else if (api.items.length > 1 && !document.hidden) {
-            // slow continuous turn that lingers as each product passes the front
-            const want = hover ? 0 : 1; speedK += (want - speedK) * Math.min(dt * 1.6, 1);
-            const ph = ((-api.theta / step()) % 1 + 1) % 1, linger = 0.28 + 0.72 * Math.pow(Math.sin(Math.PI * ph), 2);
-            api.theta -= step() / secPerItem * linger * speedK * dt * 1.55;
-          }
-          frame();
+          if (anim) {
+            const t = Math.min((now - anim.t0) / anim.dur, 1);
+            api.theta = anim.from + (anim.to - anim.from) * ease(t);
+            if (t > 0.35 && !anim.told) { anim.told = true; announce(anim.idx); }
+            if (t >= 1) { anim = null; holdUntil = now + HOLD; }
+            frame();
+          } else if (!drag && !hover && !document.hidden && api.items.length > 1 && now > holdUntil) {
+            api.next(1);
+          } else if (hover) holdUntil = Math.max(holdUntil, now + 1200);
         }
         raf = requestAnimationFrame(tick);
       };
       raf = requestAnimationFrame(tick);
     }
     function bindDrag() {
-      st.addEventListener("pointerdown", e => { drag = { x: e.clientX, th: api.theta, lx: e.clientX, lt: performance.now(), v: 0 }; tween = null; api.dragged = false; });
+      st.addEventListener("pointerdown", e => { drag = { x: e.clientX, th: api.theta }; anim = null; api.dragged = false; });
       st.addEventListener("mouseenter", () => hover = true);
       st.addEventListener("mouseleave", () => hover = false);
     }
     addEventListener("pointermove", e => {
-      if (!drag || !st) return;
+      if (!drag || !W) return;
       const dx = e.clientX - drag.x; if (Math.abs(dx) > 6) api.dragged = true;
-      const now = performance.now(), k = Math.PI * 1.3 / st.clientWidth;
-      drag.v = (e.clientX - drag.lx) * k / Math.max((now - drag.lt) / 1000, 0.008); drag.lx = e.clientX; drag.lt = now;
-      api.theta = drag.th + dx * k;
+      api.theta = drag.th + dx * Math.PI * 1.3 / W; frame();
     });
-    addEventListener("pointerup", () => { if (!drag) return; inertia = Math.max(-6, Math.min(6, drag.v)); drag = null; speedK = 0; setTimeout(() => api.dragged = false, 0); });
+    addEventListener("pointerup", () => {
+      if (!drag) return; drag = null;
+      const n = api.items.length, i = ((Math.round(-api.theta / step()) % n) + n) % n;
+      glideTo(i, 700); setTimeout(() => api.dragged = false, 0);
+    });
     let w = matchMedia("(max-width:767px)").matches;
     addEventListener("resize", () => { const m = matchMedia("(max-width:767px)").matches; if (m !== w) { w = m; build(); } });
     api.set = l => set(l);
